@@ -1,0 +1,24 @@
+{
+  "experiment": "V4 linear projection metric learning",
+  "seed": 42,
+  "device": "cuda",
+  "input_embedding_dim": 512,
+  "learned_embedding_dim": 128,
+  "best_epoch_by_validation_roc_auc": 16,
+  "best_validation_roc_auc": 0.9134722222222222,
+  "threshold_selected_on_validation_by_f1": 0.5959799289703369,
+  "train_pair_count": 2800,
+  "validation_pair_count": 480,
+  "test_pair_count": 480,
+  "test_metrics": {
+    "threshold": 0.5959799289703369,
+    "roc_auc": 0.8880034722222223,
+    "average_precision": 0.8805774405192704,
+    "accuracy": 0.8020833333333334,
+    "precision": 0.7457627118644068,
+    "recall": 0.9166666666666666,
+    "f1": 0.822429906542056,
+    "false_positives": 75,
+    "false_negatives": 20
+  }
+}

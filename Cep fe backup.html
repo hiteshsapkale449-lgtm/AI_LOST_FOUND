@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lost and Found System</title>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--ink:#14233f;--mut:#58668a;--line:#d8e0ea;--lost:#c8312f;--found:#1f5faf;--ok:#23744a;--okbg:#e2f3e9;--warn:#9a5300;--warnbg:#fff0dc;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1626;--card:#162238;--ink:#e8edf6;--mut:#9fb0cb;--line:#2a3b5c;--lost:#ff7b78;--found:#6daeff;--ok:#5fd393;--okbg:#14352a;--warn:#ffae5c;--warnbg:#3b2a14;--on:#0b1220}}
+:root[data-theme="dark"]{--bg:#0e1626;--card:#162238;--ink:#e8edf6;--mut:#9fb0cb;--line:#2a3b5c;--lost:#ff7b78;--found:#6daeff;--ok:#5fd393;--okbg:#14352a;--warn:#ffae5c;--warnbg:#3b2a14;--on:#0b1220}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--acc:var(--ink)}
+body[data-side=lost]{--acc:var(--lost)}body[data-side=found]{--acc:var(--found)}
+h1,h2,p{margin:0}h1{font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.02em}h2{font-size:20px;margin-bottom:12px}
+.mut{color:var(--mut)}.sm{font-size:14px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px;background:var(--card);border-bottom:3px solid var(--acc)}
+.brand{font-weight:800;font-size:20px;margin-right:auto}#who{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wrap{max-width:860px;margin:0 auto;padding:24px 20px}.narrow{max-width:640px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:16px}
+.two,.two2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.two{margin:26px 0 4px}
+.role{text-align:left;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px;cursor:pointer;color:var(--ink);display:grid;gap:6px;font:inherit}
+.role b{font-size:22px}.role span{color:var(--mut)}
+.role.lost.on,.role.lost:hover{border-color:var(--lost)}.role.found.on,.role.found:hover{border-color:var(--found)}
+.role.on{box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,transparent)}
+.role.lost.on b{color:var(--lost)}.role.found.on b{color:var(--found)}
+label{display:grid;gap:5px;font-weight:600;font-size:15px;margin-bottom:14px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px;width:100%;font-weight:400}
+textarea{resize:vertical}
+:focus-visible{outline:3px solid var(--found);outline-offset:2px}
+.btn{font:inherit;font-weight:650;min-height:44px;padding:9px 18px;border-radius:12px;border:1.5px solid transparent;cursor:pointer;color:var(--on)}
+.btn.lost{background:var(--lost)}.btn.found{background:var(--found)}.btn.ghost{background:none;color:var(--ink);border-color:var(--line)}.btn.sm{min-height:38px;padding:6px 12px;font-size:14px}
+.pill,.chip{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:650;background:var(--bg);color:var(--mut);white-space:nowrap}
+.pill.lost{background:var(--lost);color:var(--on)}.pill.found{background:var(--found);color:var(--on)}
+.chip.ok{background:var(--okbg);color:var(--ok)}.chip.mid,.chip.wait{background:var(--warnbg);color:var(--warn)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabs button{font:inherit;font-weight:650;background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;cursor:pointer;color:var(--mut);min-height:44px}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--acc)}
+.box{border:1.5px dashed var(--line);border-radius:12px;padding:14px;margin-bottom:14px}.box b{display:block;margin-bottom:10px}
+.row{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.th{width:56px;height:56px;border-radius:12px;background:var(--line);overflow:hidden;display:block}.th img{width:100%;height:100%;object-fit:cover;display:block}
+.act{display:grid;gap:6px;justify-items:end;text-align:right}
+summary{cursor:pointer;color:var(--mut);font-size:14px}
+.bar{display:grid;grid-template-columns:120px 1fr 42px;gap:8px;align-items:center;font-size:13px;margin-top:4px}
+.bar i{height:8px;background:var(--line);border-radius:9px;overflow:hidden}.bar u{display:block;height:100%;background:var(--acc)}
+.head{display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.empty{text-align:center;padding:34px 10px}.empty p{margin:6px 0 16px;color:var(--mut)}
+.ok-box{background:var(--okbg);color:var(--ok);border-radius:10px;padding:10px 12px;font-weight:600;font-size:14px;margin-top:8px}
+dialog{border:1px solid var(--line);border-radius:18px;width:min(460px,calc(100vw - 24px));background:var(--card);color:var(--ink);padding:22px}
+dialog::backdrop{background:rgba(10,18,35,.55)}
+#pv img{width:120px;height:90px;object-fit:cover;border-radius:10px;margin:-6px 0 14px;display:block}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100vw - 32px);z-index:9}
+.toast[hidden]{display:none}
+.err{color:var(--lost);font-weight:600;font-size:14px;margin:-6px 0 12px}
+footer{text-align:center;color:var(--mut);font-size:13px;padding:10px 20px 30px}footer button{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
+@media(max-width:560px){.two,.two2{grid-template-columns:1fr}.row{grid-template-columns:48px 1fr}.th{width:48px;height:48px}.act{grid-column:1/-1;justify-items:start;text-align:left}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head>
+<body>
+<header class="top"><span class="brand">Lost and Found System</span><div id="who"></div></header>
+<main id="app"></main>
+<footer><span id="mode"></span> Data is stored in this browser. <button data-act="reset">Reset demo</button></footer>
+<dialog id="dlg"></dialog><div class="toast" id="toast" role="status" hidden></div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATS=['Electronics','Bags','Wallets & cards','Keys','Bottles','Clothing','Books','Accessories'];
+const COL={Black:'#1d1f24',White:'#f4f4f2',Grey:'#8a8f98',Red:'#c8312f',Orange:'#e8821f',Yellow:'#e9c230',Green:'#2f8a55',Blue:'#2a6fcf',Navy:'#1c2f5e',Purple:'#7452c4',Pink:'#e07aa6',Brown:'#7a5233'};
+const PL={'Main building':[5,5],Library:[6.5,3.5],Canteen:[3.5,6.5],'Computer lab':[6,6],Auditorium:[8,6.5],'Sports ground':[2,2.5],Parking:[1.5,7.5],'Bus stop':[9,9]};
+const KEY='rt2';let P=null,D={},S=null,M={},busy=false;
+/* Backend (Member 1). Empty = demo mode. Set with ?api=http://localhost:8000 (the backend must allow CORS).
+   POST /reports | GET /reports/{id}/matches -> [{reportId, probability, textSimilarity, imageSimilarity, report?}]
+   POST /claims | PATCH /claims/{id} {state} */
+const API=(new URLSearchParams(location.search).get('api')||'').replace(/\/$/,'');
+const THRESH=.5;
+async function call(path,method,body){if(!API)return null;try{const r=await fetch(API+path,{method:method||'GET',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined});if(!r.ok)throw 0;return await r.json()}catch(e){if(!call.warned){call.warned=1;toast('Backend not reachable. Showing demo data.')}return null}}
+const f=(id,title,category,color,place,desc,q,a,holding,h)=>({id,type:'found',owner:null,title,category,color,place,desc,q,a,holding,t:Date.now()-36e5*h});
+const seed=()=>[f('s1','Black earphone charging case','Electronics','Black','Computer lab','Scratched lid with a cat sticker inside. Left on a desk near the window.','What sticker is inside the lid?','cat','Security desk, Main building',20),
+f('s2','Brown leather wallet','Wallets & cards','Brown','Canteen','Has a college ID card inside. Found under a bench.','What is the first name on the ID?','Rohan','Security desk, Main building',14),
+f('s3','Navy backpack with red zip','Bags','Navy','Parking','Two compartments and a keychain on the handle.','What is on the keychain?','football','Library help desk',18),
+f('s4','Blue steel water bottle','Bottles','Blue','Auditorium','Dented near the base, with a blue cap.','Where is the dent?','base','Library help desk',8),
+f('s5','Black-framed spectacles in red case','Accessories','Black','Library','Round frame with a scratched lens.','Which lens is scratched?','left','Library help desk',5)];
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!S.items)S={items:seed(),claims:[],user:null,tab:'report'};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Storage is full, so the photo may not be saved.')}};
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3500)}
+const ago=t=>{const h=(Date.now()-t)/36e5;return h<1?'just now':h<24?Math.round(h)+' h ago':Math.round(h/24)+' d ago'};
+/* matching: a simple stand-in for the CLIP + Sentence-BERT backend */
+const stop=new Set('a an the and or of with in on at to for is it my i this that near by from has have had small lost found left'.split(' '));
+const syn={earbuds:'earphones',earbud:'earphones',airpods:'earphones',headphones:'earphones',purse:'wallet',flask:'bottle',tumbler:'bottle',backpack:'bag',rucksack:'bag',tote:'bag',mobile:'phone',keychain:'key',keys:'key',spectacles:'glasses',hoodie:'jacket'};
+const tok=s=>[...new Set(String(s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(t=>t&&!stop.has(t)).map(t=>syn[t]||(t.length>3&&t.endsWith('s')&&!t.endsWith('ss')?t.slice(0,-1):t)).map(t=>syn[t]||t))];
+const rgb=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+const csim=(a,b)=>Math.max(0,1-Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])/330);
+const rgbOf=i=>i.avg||rgb(COL[i.color]);
+function score(l,fd){
+ const A=tok(l.title+' '+l.desc),B=tok(fd.title+' '+fd.desc),sh=A.filter(t=>B.includes(t));
+ const text=Math.min(1,1.4*2*sh.length/((A.length+B.length)||1));
+ const p=PL[l.place],q=PL[fd.place];
+ const parts={Photo:[csim(rgbOf(l),rgbOf(fd)),.4],Description:[text,.25],Location:[Math.exp(-Math.hypot(p[0]-q[0],p[1]-q[1])/4),.2],Colour:[l.color===fd.color?1:csim(rgb(COL[l.color]),rgb(COL[fd.color])),.1],Category:[l.category===fd.category?1:0,.05]};
+ return {total:Object.values(parts).reduce((s,[v,w])=>s+v*w,0),parts};
+}
+const bar=(k,v)=>`<div class="bar"><span>${k}</span><i><u style="width:${Math.round(v*100)}%"></u></i><b>${Math.round(v*100)}%</b></div>`;
+const why=(t,i)=>[['Text similarity',t],['Image similarity',i]].filter(r=>typeof r[1]==='number').map(r=>bar(r[0],r[1])).join('')+'<p class="sm mut" style="margin-top:6px">The ML classifier combines these into one match probability.</p>';
+const mock=l=>S.items.filter(x=>x.type==='found'&&x.category===l.category).map(x=>{const s=score(l,x);return {reportId:x.id,probability:s.total,textSimilarity:s.parts.Description[0],imageSimilarity:s.parts.Photo[0]}});
+async function getMatches(l){const r=await call('/reports/'+encodeURIComponent(l.id)+'/matches');return Array.isArray(r)?r:mock(l)}
+async function load(){if(busy)return;const need=S.items.filter(i=>i.type==='lost'&&i.owner===S.user.name&&!M[i.id]);if(!need.length)return;busy=true;
+ for(const l of need){const r=await getMatches(l);r.forEach(m=>{if(m.report&&!S.items.some(i=>i.id===m.reportId))S.items.push({type:'found',owner:'backend',...m.report,id:m.reportId})});M[l.id]=r}
+ busy=false;render()}
+const same=(a,b)=>{a=a.toLowerCase().trim();b=b.toLowerCase().trim();return !!a&&(a.includes(b)||b.includes(a))};
+const th=i=>`<span class="th" style="background:${COL[i.color]}">${i.photo?`<img src="${i.photo}" alt="Photo of ${esc(i.title)}">`:''}</span>`;
+const mineF=i=>i&&i.type==='found'&&(!i.owner||i.owner===S.user.name);
+const pending=()=>S.claims.filter(c=>c.state==='pending'&&mineF(S.items.find(i=>i.id===c.foundId)));
+const empty=(h,p,btn)=>`<div class="card empty"><h2>${h}</h2><p>${p}</p>${btn||''}</div>`;
+const opt=(a,v)=>a.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('');
+/* views */
+const login=()=>`<div class="wrap narrow"><h1>Find what you lost. Return what you found.</h1><p class="mut" style="margin-top:10px">Choose how you want to use the Lost and Found System. You can switch sides at any time.</p>
+<div class="two"><button class="role lost${P==='lost'?' on':''}" data-act="pick" data-s="lost"><b>I lost something</b><span>Report it and see likely matches.</span></button>
+<button class="role found${P==='found'?' on':''}" data-act="pick" data-s="found"><b>I found something</b><span>Report it and confirm the real owner.</span></button></div>
+${P?`<form class="card" id="lf"><label>Your name<input name="nm" id="nm" autocomplete="name" maxlength="30" required></label><p class="err" id="lerr" hidden>Enter your name to continue.</p><button class="btn ${P}" type="submit">Continue to the ${P==='lost'?'Lost':'Found'} side</button><p class="sm mut" style="margin-top:12px">Demo only: no password needed.</p></form>`:''}</div>`;
+const form=L=>`<form id="rf" class="card"><h2>${L?'What did you lose?':'What did you find?'}</h2>
+<label>Item<input name="t" required maxlength="60" placeholder="${L?'Black earbuds with charging case':'Brown leather wallet'}"></label>
+<div class="two2"><label>Category<select name="c" required><option value="">Choose</option>${opt(CATS)}</select></label><label>Main colour<select name="col" required><option value="">Choose</option>${opt(Object.keys(COL))}</select></label></div>
+<label>${L?'Where did you lose it?':'Where did you find it?'}<select name="pl" required><option value="">Choose a place</option>${opt(Object.keys(PL))}</select></label>
+<label>Description<textarea name="d" required minlength="8" rows="3" placeholder="Marks, stickers, scratches, what was inside"></textarea></label>
+<label>Photo (optional)<input type="file" id="ph" accept="image/*"></label><div id="pv"></div>
+${L?'':`<div class="box"><b>Confirm the real owner</b><label>A question only the owner can answer<input name="q" required maxlength="80" placeholder="What sticker is inside the lid?"></label><label>Correct answer (hidden from claimants)<input name="a" required maxlength="40"></label><label>Where is the item now?<select name="h">${opt(['With me','Security desk, Main building','Library help desk'])}</select></label></div>`}
+<button class="btn ${L?'lost':'found'}" type="submit">${L?'Find matches':'Post found item'}</button></form>`;
+function lostItems(){
+ const mine=S.items.filter(i=>i.type==='lost'&&i.owner===S.user.name).reverse();
+ if(!mine.length)return empty('No lost items yet','Report what you lost and likely matches will appear here.','<button class="btn lost" data-act="tab" data-t="report">Report a lost item</button>');
+ return mine.map(l=>{
+  const cl=fd=>[...S.claims].reverse().find(c=>c.lostId===l.id&&c.foundId===fd.id);
+  const ms=M[l.id],all=(ms||[]).map(m=>({...m,x:S.items.find(i=>i.id===m.reportId)})).filter(m=>m.x&&(!m.x.done||cl(m.x))).sort((a,b)=>b.probability-a.probability);
+  const hi=all.filter(m=>m.probability>=THRESH);
+  const rows=hi.map(({x,probability,textSimilarity,imageSimilarity})=>{const p=Math.round(probability*100),c=cl(x);
+   const st=!c?`<button class="btn lost sm" data-act="claim" data-l="${l.id}" data-f="${x.id}">This is mine</button>`:c.state==='pending'?'<span class="chip wait">Waiting for the finder</span>':c.state==='approved'?'<span class="chip ok">Approved</span>':'<span class="chip wait">Declined</span><button class="btn ghost sm" data-act="claim" data-l="'+l.id+'" data-f="'+x.id+'">Try again</button>';
+   return `<div class="row">${th(x)}<div><b>${esc(x.title)}</b><div class="sm mut">Found at ${esc(x.place)} · ${ago(x.t)}</div><details><summary>Why ${p}%?</summary>${why(textSimilarity,imageSimilarity)}</details>${c&&c.state==='approved'?`<div class="ok-box">Collect it from: ${esc(x.holding)}</div>`:''}</div><div class="act"><span class="chip ${p>=80?'ok':'mid'}">${p}% match</span>${st}</div></div>`}).join('');
+  return `<div class="card"><div class="head"><div><h2 style="margin:0">${esc(l.title)}</h2><div class="sm mut">Lost at ${esc(l.place)} · ${ago(l.t)}</div></div><span class="chip ${hi.length?'ok':''}">${hi.length?hi.length+' possible match'+(hi.length>1?'es':''):'Searching'}</span></div>
+  ${rows||(ms?'<p class="mut">No likely match yet. Your report stays open and is compared with every new found item.</p>':'<p class="mut">Comparing with found reports…</p>')}${all.length>hi.length?`<p class="sm mut" style="margin-top:10px">${all.length-hi.length} weaker result${all.length-hi.length>1?'s':''} below 50% kept for later.</p>`:''}</div>`}).join('');
+}
+function foundItems(){
+ const mine=S.items.filter(mineF).reverse();
+ if(!mine.length)return empty('No found items yet','Post an item you found so its owner can claim it.','<button class="btn found" data-act="tab" data-t="report">Post a found item</button>');
+ return `<div class="card">${mine.map(i=>{const n=S.claims.filter(c=>c.foundId===i.id&&c.state==='pending').length;
+  return `<div class="row">${th(i)}<div><b>${esc(i.title)}</b><div class="sm mut">${esc(i.place)} · ${ago(i.t)} · ${esc(i.holding)}</div></div><div class="act">${i.done?'<span class="chip ok">Handed over</span>':n?`<span class="chip wait">${n} claim${n>1?'s':''} to review</span>`:'<span class="chip">Waiting for the owner</span>'}</div></div>`}).join('')}</div>`;
+}
+function claimsView(){
+ const list=pending();
+ if(!list.length)return empty('No claims to review','When an owner says an item is theirs, you will review their answer here.');
+ return list.map(c=>{const fd=S.items.find(i=>i.id===c.foundId),l=S.items.find(i=>i.id===c.lostId),ok=same(c.answer,fd.a);
+  return `<div class="card"><div class="head"><h2 style="margin:0">${esc(c.by)} says this is theirs</h2><span class="chip ${ok?'ok':'wait'}">${ok?'Answer matches':'Answer differs'}</span></div>
+  <p class="sm mut">Found item: ${esc(fd.title)}</p><p class="sm mut">Their lost report: ${esc(l?l.title:'')}</p>
+  <p style="margin-top:10px"><b>${esc(fd.q)}</b></p><p>Their answer: “${esc(c.answer)}”</p><p class="sm mut">Your answer: “${esc(fd.a)}”</p>
+  <div class="acts"><button class="btn found" data-act="yes" data-c="${c.id}">Approve handover</button><button class="btn ghost" data-act="no" data-c="${c.id}">Decline</button></div></div>`}).join('');
+}
+function render(){
+ const u=S.user;document.body.dataset.side=u?u.side:'';$('#mode').textContent=API?'Backend: '+API+'.':'Demo mode, no backend connected.';
+ $('#who').innerHTML=u?`<span class="pill ${u.side}">${u.side==='lost'?'Lost side':'Found side'}</span><span class="sm">${esc(u.name)}</span><button class="btn ghost sm" data-act="out">Switch side</button>`:'';
+ if(!u){$('#app').innerHTML=login();return}
+ const L=u.side==='lost',n=L?0:pending().length;
+ const tabs=L?[['report','Report lost item'],['items','My items and matches']]:[['report','Report found item'],['items','Found items'],['claims','Claims to review'+(n?' ('+n+')':'')]];
+ if(!tabs.some(t=>t[0]===S.tab))S.tab='report';
+ if(L&&S.tab==='items')load();
+ const body=S.tab==='report'?form(L):S.tab==='items'?(L?lostItems():foundItems()):claimsView();
+ $('#app').innerHTML=`<div class="wrap"><div class="tabs" role="tablist">${tabs.map(t=>`<button role="tab" aria-selected="${S.tab===t[0]}" data-act="tab" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>${body}</div>`;
+}
+/* photo: shrink in the browser and read the average colour */
+const readPhoto=file=>new Promise(res=>{const r=new FileReader();r.onerror=()=>res(null);r.onload=()=>{const im=new Image();im.onerror=()=>res(null);im.onload=()=>{const s=Math.min(1,220/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,im.width*s|0);c.height=Math.max(1,im.height*s|0);const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);const d=x.getImageData(c.width*.25|0,c.height*.25|0,Math.max(1,c.width*.5|0),Math.max(1,c.height*.5|0)).data;let a=[0,0,0],n=0;for(let i=0;i<d.length;i+=4){a[0]+=d[i];a[1]+=d[i+1];a[2]+=d[i+2];n++}res({url:c.toDataURL('image/jpeg',.7),avg:a.map(v=>Math.round(v/n))})};im.src=r.result};r.readAsDataURL(file)});
+document.addEventListener('change',async e=>{
+ if(e.target.id!=='ph'||!e.target.files[0])return;
+ const p=await readPhoto(e.target.files[0]);
+ if(!p){$('#pv').innerHTML='<p class="err">That file could not be read as an image.</p>';return}
+ D=p;$('#pv').innerHTML=`<img src="${p.url}" alt="Your photo">`;
+ const sel=$('#rf').elements.col;let best='',bd=1e9;for(const k in COL){const d=Math.hypot(...rgb(COL[k]).map((v,i)=>v-p.avg[i]));if(d<bd){bd=d;best=k}}
+ if(!sel.value)sel.value=best;
+});
+document.addEventListener('submit',e=>{e.preventDefault();const fm=e.target;
+ if(fm.id==='lf'){const n=fm.elements.nm.value.trim();if(!n){$('#lerr').hidden=false;return}
+  S.user={name:n,side:P};M={};S.tab=S.items.some(i=>i.type===P&&i.owner===n)?'items':'report';save();render()}
+ else if(fm.id==='rf'){const v=Object.fromEntries(new FormData(fm)),L=S.user.side==='lost';
+  const it={id:'i'+Date.now(),type:S.user.side,owner:S.user.name,title:v.t.trim(),category:v.c,color:v.col,place:v.pl,desc:v.d.trim(),photo:D.url||null,avg:D.avg||null,t:Date.now()};
+  if(!L){it.q=v.q.trim();it.a=v.a.trim();it.holding=v.h}
+  S.items.push(it);call('/reports','POST',it);D={};S.tab='items';M={};save();render();toast(L?'Reported. Matches are shown below.':'Posted. You will see claims under Claims to review.')}
+ else if(fm.id==='cf'){const cn={id:'c'+Date.now(),lostId:fm.dataset.l,foundId:fm.dataset.f,by:S.user.name,answer:fm.elements.ans.value.trim(),state:'pending'};S.claims.push(cn);call('/claims','POST',cn);$('#dlg').close();save();render();toast('Claim sent. The finder will review your answer.')}
+});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t)return;const a=t.dataset.act;
+ if(a==='pick'){P=t.dataset.s;render();$('#nm')?.focus()}
+ else if(a==='tab'){S.tab=t.dataset.t;M={};save();render()}
+ else if(a==='out'){S.user=null;P=null;save();render()}
+ else if(a==='claim'){const fd=S.items.find(i=>i.id===t.dataset.f),d=$('#dlg');
+  d.innerHTML=`<form id="cf" data-l="${esc(t.dataset.l)}" data-f="${esc(fd.id)}"><h2>Prove it is yours</h2><p class="mut">${esc(fd.title)}, found at ${esc(fd.place)}. Answer the finder’s question.</p><p style="margin:12px 0"><b>${esc(fd.q)}</b></p><label>Your answer<input name="ans" required maxlength="60"></label><div class="acts"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn lost" type="submit">Send claim</button></div></form>`;d.showModal()}
+ else if(a==='close')$('#dlg').close();
+ else if(a==='yes'||a==='no'){const c=S.claims.find(x=>x.id===t.dataset.c);c.state=a==='yes'?'approved':'declined';call('/claims/'+encodeURIComponent(c.id),'PATCH',{state:c.state});
+  if(a==='yes'){S.items.find(i=>i.id===c.foundId).done=true;S.claims.forEach(o=>{if(o!==c&&o.foundId===c.foundId&&o.state==='pending')o.state='declined'})}
+  save();render();toast(a==='yes'?'Handover approved. The owner can now see where to collect it.':'Claim declined.')}
+ else if(a==='reset'){try{localStorage.removeItem(KEY)}catch(x){}location.reload()}
+});
+render();
+})();
+</script></body></html>

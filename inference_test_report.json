@@ -1,0 +1,16 @@
+{
+  "test_pair_count": 480,
+  "threshold": 0.5959799289703369,
+  "roc_auc": 0.8879513888888889,
+  "average_precision": 0.8806799925880432,
+  "accuracy": 0.8020833333333334,
+  "precision": 0.7457627118644068,
+  "recall": 0.9166666666666666,
+  "f1": 0.822429906542056,
+  "tn": 165,
+  "fp": 75,
+  "fn": 20,
+  "tp": 220,
+  "score_type": "cosine_similarity_not_probability",
+  "evaluation": "original held-out test pairs scored directly from images"
+}

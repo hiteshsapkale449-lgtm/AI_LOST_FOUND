@@ -1,0 +1,2 @@
+image_name,object_name,confidence,x1,y1,x2,y2
+image1.jpeg,vase,0.3427,20.56,3.41,147.86,172.22

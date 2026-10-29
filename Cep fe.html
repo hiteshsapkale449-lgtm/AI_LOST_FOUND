@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost and Found</title>
+    <style>
+        /* Basic styling */
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; background: #f4f4f2; color: #1d1f24; }
+        .wrap { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .narrow { max-width: 500px; }
+        .ctr { text-align: center; }
+        
+        /* Buttons & Tabs */
+        .btn { padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; background: #1d1f24; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn.lost { background: #c8312f; }
+        .btn.found { background: #2a6fcf; }
+        .btn.ghost { background: transparent; color: #1d1f24; border: 1px solid #d1d5db; }
+        .btn.sm { padding: 6px 12px; font-size: 0.85em; }
+        
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .tabs button { padding: 8px 16px; border: none; background: transparent; cursor: pointer; font-size: 1em; font-weight: bold; color: #8a8f98; }
+        .tabs button[aria-selected="true"] { color: #1d1f24; border-bottom: 3px solid #1d1f24; margin-bottom: -12px; }
+        
+        /* Forms */
+        label { display: block; margin-bottom: 16px; font-weight: 600; font-size: 0.9em; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        .two, .two2 { display: flex; gap: 16px; margin-bottom: 16px; }
+        .two > *, .two2 > * { flex: 1; }
+        
+        /* Layout */
+        .acts { display: flex; gap: 10px; margin-top: 16px; }
+        .row { display: flex; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid #eee; }
+        .row:last-child { border-bottom: none; }
+        .th { width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .th img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Typography */
+        .sm { font-size: 0.85em; }
+        .mut { color: #8a8f98; }
+        h1, h2 { margin-top: 0; }
+        
+        /* Badges/Chips */
+        .chip { padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; background: #e5e7eb; }
+        .chip.ok { background: #2f8a55; color: white; }
+        .chip.mid { background: #e8821f; color: white; }
+        .chip.wait { background: #d97706; color: white; }
+        .pill { padding: 4px 8px; background: #e5e7eb; border-radius: 4px; font-size: 0.8em; margin-right: 10px; font-weight: bold; }
+        .pill.lost { background: #fce8e8; color: #c8312f; }
+        .pill.found { background: #e8f0fc; color: #2a6fcf; }
+        
+        /* Utility */
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #1d1f24; color: white; padding: 12px 20px; border-radius: 6px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        dialog { border: none; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 24px; max-width: 440px; width: 100%; }
+        dialog::backdrop { background: rgba(0,0,0,0.5); }
+        
+        /* Stats / Steps / Feats */
+        .stats { display: flex; gap: 16px; justify-content: center; margin: 40px 0; }
+        .stat { background: white; padding: 20px; border-radius: 8px; text-align: center; flex: 1; border-top: 4px solid var(--c); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat b { display: block; font-size: 2em; }
+        .steps { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
+        .steps li { flex: 1; min-width: 150px; background: white; padding: 16px; border-radius: 8px; border-left: 4px solid var(--c); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .steps li span { display: inline-block; width: 24px; height: 24px; background: var(--c); color: white; text-align: center; border-radius: 50%; margin-bottom: 8px; font-weight: bold; line-height: 24px; }
+        .steps li b { display: block; margin-bottom: 4px; }
+        .feats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 40px; }
+        .feat { flex: 1; min-width: 200px; text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .feat i { font-size: 2em; display: block; font-style: normal; margin-bottom: 10px; }
+        .feat b { display: block; margin-bottom: 8px; }
+        .bar { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.9em; }
+        .bar i { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; display: block; }
+        .bar u { display: block; height: 100%; background: #6f4fd0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Context Bar -->
+    <div style="max-width: 800px; margin: 0 auto 20px auto; display: flex; justify-content: space-between; align-items: center;">
+        <div class="sm mut"><span id="mode"></span></div>
+        <div id="who"></div>
+    </div>
+
+    <!-- The main application container -->
+    <div id="app"></div>
+
+    <!-- Hidden elements required by your JS -->
+    <div id="toast" hidden></div>
+    <dialog id="dlg"></dialog>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {'use strict';
+
+    const $ = s => document.querySelector(s);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const API = 'http://127.0.0.1:5000';
+    const CATS = ['Electronics', 'Bags', 'Wallets & cards', 'Keys', 'Bottles', 'Clothing', 'Books', 'Accessories', 'Other'];
+    const CATMAP = { 'Wallets & cards': 'wallets_cards', 'Other': 'other' };
+    const COL = { Black: '#1d1f24', White: '#f4f4f2', Grey: '#8a8f98', Red: '#c8312f', Orange: '#e8821f', Yellow: '#e9c230', Green: '#2f8a55', Blue: '#2a6fcf', Navy: '#1c2f5e', Purple: '#7452c4', Pink: '#e07aa6', Brown: '#7a5233' };
+    const PL = { 'Main building': [5, 5], Library: [6.5, 3.5], Canteen: [3.5, 6.5], 'Computer lab': [6, 6], Auditorium: [8, 6.5], 'Sports ground': [2, 2.5], Parking: [1.5, 7.5], 'Bus stop': [9, 9] };
+    const KEY = 'lostFoundAuthV3';
+
+    let D = {}, S = null, M = {}, matchLoading = {}, backendItems = [], backendClaims = [], claimsBusy = false, claimsLoaded = false;
+    let authMode = 'login';
+    let lostScope = 'mine'; // 'mine' or 'all'
+
+    try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    if (!S || typeof S.loggedIn === 'undefined') {
+        S = { items: [], claims: [], user: null, tab: 'report', loggedIn: false, userName: '', userId: null, myReportedIds: [] };
+    }
+    if (!Array.isArray(S.claims)) S.claims = [];
+    if (!Array.isArray(S.myReportedIds)) S.myReportedIds = [];
+
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+    function toast(m) {
+        const t = $('#toast');
+        if (!t) return;
+        t.textContent = m;
+        t.hidden = false;
+        clearTimeout(toast.h);
+        toast.h = setTimeout(() => t.hidden = true, 4000);
+    }
+
+    async function api(path, options = {}) {
+        const r = await fetch(API + path, { credentials: 'include', ...options });
+        let data = {};
+        try { data = await r.json(); } catch (e) {}
+        if (!r.ok) {
+            if (r.status === 401 && S && S.loggedIn) {
+                S.loggedIn = false;
+                S.user = null;
+                S.userId = null;
+                save();
+                render();
+                toast('Session expired. Please log in again.');
+                throw new Error('Session expired');
+            }
+            throw new Error(data.error || data.message || `Request failed (${r.status})`);
+        }
+        return data;
+    }
+
+    const ago = t => {
+        if (!t) return '';
+        const d = typeof t === 'number' ? t : Date.parse(t);
+        if (!Number.isFinite(d)) return '';
+        const h = (Date.now() - d) / 36e5;
+        return h < 1 ? 'just now' : h < 24 ? Math.round(h) + ' h ago' : Math.round(h / 24) + ' d ago';
+    };
+
+    const normCategory = c => CATMAP[c] || String(c || 'other').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const prettyCategory = c => ({ 'wallets_cards': 'Wallets & cards', 'other': 'Other' }[c] || String(c || 'Other').replace(/_/g, ' ').replace(/\b\w/g, x => x.toUpperCase()));
+
+    const mapItem = i => ({
+        id: String(i.id),
+        type: i.type,
+        owner: i.user_id == null ? '' : String(i.user_id),
+        title: i.title,
+        category: prettyCategory(i.category),
+        categoryRaw: i.category,
+        color: 'Grey',
+        place: i.location || 'Unknown location',
+        desc: i.description || '',
+        photo: i.image_path ? API + '/' + String(i.image_path).replace(/^\/+/, '') : null,
+        image_path: i.image_path || null,
+        verification_question: i.verification_question || '',
+        verification_answer: i.verification_answer || '',
+        t: i.created_at ? Date.parse(i.created_at.replace(' ', 'T') + 'Z') : Date.now(),
+        status: i.status || 'open',
+        raw: i
+    });
+
+    const isMyItem = item => {
+        if (!item) return false;
+        if (S && S.userId && String(item.owner) === String(S.userId)) return true;
+        if (S && Array.isArray(S.myReportedIds) && S.myReportedIds.includes(Number(item.id))) return true;
+        return false;
+    };
+
+    const opt = a => a.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
+    const rgb = h => [1, 3, 5].map(i => parseInt((h || '#888888').substr(i, 2), 16));
+
+    const readPhoto = file => new Promise(resolve => {
+        const r = new FileReader();
+        r.onerror = () => resolve(null);
+        r.onload = () => {
+            const im = new Image();
+            im.onerror = () => resolve(null);
+            im.onload = () => {
+                const scale = Math.min(1, 220 / Math.max(im.width, im.height));
+                const c = document.createElement('canvas');
+                c.width = Math.max(1, im.width * scale | 0);
+                c.height = Math.max(1, im.height * scale | 0);
+                const ctx = c.getContext('2d');
+                ctx.drawImage(im, 0, 0, c.width, c.height);
+                const d = ctx.getImageData(0, 0, c.width, c.height).data;
+                let a = [0, 0, 0], n = 0;
+                for (let j = 0; j < d.length; j += 4) {
+                    a[0] += d[j]; a[1] += d[j + 1]; a[2] += d[j + 2]; n++;
+                }
+                resolve({ url: c.toDataURL('image/jpeg', 0.7), avg: a.map(x => Math.round(x / n)) });
+            };
+            im.src = r.result;
+        };
+        r.readAsDataURL(file);
+    });
+
+    const th = i => `<span class="th" style="background:${esc(COL[i.color] || '#d8e0ea')}">${i.photo ? `<img src="${esc(i.photo)}" alt="Photo of ${esc(i.title)}">` : ''}</span>`;
+    const loc = i => esc(i.place || 'Unknown location');
+    const empty = (h, p, btn = '') => `<div class="card empty"><h2>${esc(h)}</h2><p>${esc(p)}</p>${btn}</div>`;
+
+    const bar = (k, v) => `<div class="bar"><span>${esc(k)}</span><i><u style="width:${Math.max(0, Math.min(100, Math.round(v * 100)))}%"></u></i><b>${Math.round(v * 100)}%</b></div>`;
+
+    const why = (t, i) => [['Text similarity', t], ['Image similarity', i]]
+        .filter(x => typeof x[1] === 'number' && Number.isFinite(x[1]))
+        .map(x => bar(x[0], x[1])).join('') +
+        '<p class="sm mut" style="margin-top:6px">The backend ranking score is calculated using text, location, date, and image comparison.</p>';
+
+    async function refreshItems() {
+        try {
+            const rows = await api('/api/items/');
+            if (Array.isArray(rows)) backendItems = rows.map(mapItem);
+            return backendItems;
+        } catch (e) {
+            console.error('Failed to refresh items:', e);
+            return backendItems;
+        }
+    }
+
+    async function getMatches(itemId) {
+        const data = await api('/api/matches/ranked/' + encodeURIComponent(itemId));
+        const arr = Array.isArray(data) ? data : (data.matches || []);
+        
+        // Deduplicate matches strictly by found item ID
+        const seen = new Set();
+        const unique = [];
+        for (const m of arr) {
+            const repId = String(m.found_item_id ?? m.reportId ?? m.id);
+            if (!seen.has(repId)) {
+                seen.add(repId);
+                unique.push({
+                    reportId: repId,
+                    rankingScore: Number(m.ranking_score ?? m.score ?? 0),
+                    textSimilarity: typeof m.text_similarity === 'number' ? m.text_similarity : null,
+                    imageSimilarity: typeof m.image_similarity === 'number' ? m.image_similarity : null,
+                    foundTitle: m.found_title || m.title || 'Found item',
+                    foundLocation: m.found_location || m.location || 'Unknown location',
+                    verificationQuestion: m.verification_question || '',
+                    raw: m
+                });
+            }
+        }
+        return unique.sort((a, b) => b.rankingScore - a.rankingScore);
+    }
+
+    // Load matches for a single item without locking or reloading other items
+    async function loadMatchesForItem(itemId, force = false) {
+        const idStr = String(itemId);
+        if (matchLoading[idStr]) return;
+        if (!force && typeof M[idStr] !== 'undefined') return;
+
+        matchLoading[idStr] = true;
+        updateMatchesUI(idStr);
+
+        try {
+            M[idStr] = await getMatches(idStr);
+        } catch (err) {
+            console.error(`Could not load matches for item ${idStr}:`, err);
+            if (typeof M[idStr] === 'undefined') M[idStr] = [];
+        } finally {
+            matchLoading[idStr] = false;
+            updateMatchesUI(idStr);
+        }
+    }
+
+    // Load matches only for items currently in view that haven't been loaded
+    async function loadMatches(force = false) {
+        if (!S.user || S.user.side !== 'lost') return;
+
+        const myItems = backendItems.filter(i => i.type === 'lost' && isMyItem(i));
+        const allLost = backendItems.filter(i => i.type === 'lost');
+        const hasMy = myItems.length > 0;
+
+        const targets = (lostScope === 'mine' && hasMy) ? myItems : (lostScope === 'mine' ? [] : allLost);
+
+        for (const item of targets) {
+            if (item.status === 'resolved') continue;
+            if (!force && typeof M[item.id] !== 'undefined') continue;
+            loadMatchesForItem(item.id, force);
+        }
+    }
+
+    function updateMatchesUI(itemId) {
+        const container = document.getElementById(`matches-body-${itemId}`);
+        const btn = document.querySelector(`button[data-act="refresh-matches"][data-id="${itemId}"]`);
+        const item = backendItems.find(i => String(i.id) === String(itemId));
+
+        if (btn) {
+            btn.textContent = matchLoading[String(itemId)] ? 'Checking...' : 'Refresh matches';
+            btn.disabled = !!matchLoading[String(itemId)];
+        }
+
+        if (container && item) {
+            container.innerHTML = renderMatchesRows(item);
+        } else {
+            render();
+        }
+    }
+
+    function renderMatchesRows(l) {
+        const idStr = String(l.id);
+        const isLoading = !!matchLoading[idStr];
+        const ms = M[idStr];
+
+        if (isLoading) {
+            return `<div style="background:#f4f7fb; border-radius:6px; padding:14px; text-align:center; margin-top:10px;">
+                <p class="mut" style="margin:0">🔍 Finding matching items for "${esc(l.title)}"...</p>
+            </div>`;
+        }
+
+        if (typeof ms === 'undefined') {
+            return `<div style="background:#fafafa; border-radius:6px; padding:12px; display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <span class="sm mut">Matches not calculated yet.</span>
+                <button class="btn ghost sm" data-act="refresh-matches" data-id="${esc(l.id)}">Find matches</button>
+            </div>`;
+        }
+
+        const all = (ms || []).map(m => ({
+            ...m,
+            x: backendItems.find(i => String(i.id) === String(m.reportId))
+        })).filter(m => m.x || m.foundTitle);
+
+        if (!all.length) {
+            return `<div style="background:#fafafa; border-radius:6px; padding:16px; margin-top:10px; border:1px dashed #d1d5db; text-align:center;">
+                <p class="mut" style="margin:0 0 6px 0;">No matching found items yet.</p>
+                <p class="sm mut" style="margin:0;">Only candidate items with relevant match scores are displayed. Unrelated objects are automatically excluded.</p>
+            </div>`;
+        }
+
+        return all.map(m => {
+            const x = m.x || { id: m.reportId, title: m.foundTitle, place: m.foundLocation, color: 'Grey' };
+            const p = Math.round(m.rankingScore);
+            const vq = x.verification_question || m.verificationQuestion || '';
+
+            return `<div class="row">
+                ${th(x)}
+                <div style="flex:1">
+                    <b>${esc(x.title)}</b>
+                    <div class="sm mut">Found at ${loc(x)}</div>
+                    ${vq ? `<div class="sm" style="margin-top:4px; color:#1e40af;"><b>🔐 Security Question:</b> ${esc(vq)}</div>` : ''}
+                    <details style="margin-top:6px;">
+                        <summary style="cursor:pointer; font-size:0.9em;">Why ${p}/100?</summary>
+                        ${why(m.textSimilarity, m.imageSimilarity)}
+                    </details>
+                </div>
+                <div class="act">
+                    <span class="chip ${p >= 80 ? 'ok' : 'mid'}">${p}/100 score</span>
+                    <button class="btn lost sm" data-act="claim" data-f="${esc(m.reportId)}" data-title="${esc(x.title)}" data-vq="${esc(vq)}" style="display:block; margin-top:8px;">This is mine</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function loadClaims(force = false) {
+        if (claimsBusy || (claimsLoaded && !force)) return;
+
+        claimsBusy = true;
+        try {
+            const rows = await api('/api/claims/');
+            backendClaims = Array.isArray(rows) ? rows : [];
+            claimsLoaded = true;
+        } catch (e) {
+            toast('Could not load claims: ' + e.message);
+        } finally {
+            claimsBusy = false;
+            if (S.user && S.user.side === 'found' && S.tab === 'claims') render();
+        }
+    }
+
+    const home = () => {
+        const f = backendItems.filter(i => i.type === 'found' && i.status === 'open');
+        const l = backendItems.filter(i => i.type === 'lost' && i.status === 'open');
+        const back = backendItems.filter(i => i.status === 'resolved').length;
+
+        const stat = (n, t, c) => `<div class="stat" style="--c:${c}"><b>${n}</b><span class="sm">${t}</span></div>`;
+
+        const steps = [
+            ['Report', 'Describe what you lost or found.', '#c8312f'],
+            ['Add a photo', 'Upload an optional item photo.', '#1f5faf'],
+            ['AI compares', 'Your Flask backend scores candidates.', '#6f4fd0'],
+            ['Review matches', 'Compare ranked possible matches.', '#23744a'],
+            ['Verify', 'Answer the finder\'s secret challenge.', '#b3590f']
+        ];
+
+        const feats = [
+            ['📸', 'Image matching', 'Uses the connected backend image-matching model.'],
+            ['🔐', 'Owner challenge', 'Finders ask secret questions to verify real owners.'],
+            ['🛡️', 'Claim review', 'Claims are verified and reviewed through Flask.']
+        ];
+
+        return `<section class="stats">${stat(f.length, 'found items open', '#2a6fcf')}${stat(l.length, 'lost reports open', '#c8312f')}${stat(back, 'items resolved', '#2f8a55')}</section>
+        <h2 class="ctr">How it works</h2>
+        <ol class="steps">${steps.map((s, i) => `<li style="--c:${s[2]}"><span>${i + 1}</span><b>${s[0]}</b><div class="sm mut">${s[1]}</div></li>`).join('')}</ol>
+        <div class="feats">${feats.map(x => `<div class="feat"><i>${x[0]}</i><b>${x[1]}</b><div class="sm mut">${x[2]}</div></div>`).join('')}</div>
+        ${f.length ? `<h2 class="ctr">Recently found</h2><div class="recent card">${f.slice(-3).reverse().map(i => `<div class="row">${th(i)}<div><b>${esc(i.title)}</b><div class="sm mut">${loc(i)} · ${ago(i.t)}</div></div></div>`).join('')}</div>` : ''}`;
+    };
+
+    /* Real Auth View */
+    const authScreen = () => `<div class="wrap"><div class="narrow card" style="margin:0 auto; padding-top:32px;">
+        <h1 class="ctr">${authMode === 'login' ? 'Log In' : 'Create Account'}</h1>
+        <p class="mut ctr" style="margin-top:10px; margin-bottom:24px;">Please authenticate to connect to the backend.</p>
+        <div class="tabs" style="justify-content:center;">
+            <button type="button" aria-selected="${authMode === 'login'}" data-act="auth-tab" data-m="login">Log In</button>
+            <button type="button" aria-selected="${authMode === 'register'}" data-act="auth-tab" data-m="register">Register</button>
+        </div>
+        <form id="auth-form">
+            ${authMode === 'register' ? `<label>Full Name<input name="name" type="text" required placeholder="John Doe"></label>` : ''}
+            <label>Email Address<input name="email" type="email" required placeholder="you@example.com"></label>
+            <label>Password<input name="password" type="password" required placeholder="••••••••"></label>
+            <button class="btn found" type="submit" style="width:100%; margin-top:16px;">${authMode === 'login' ? 'Log In securely' : 'Register securely'}</button>
+        </form>
+    </div></div>`;
+
+    /* Role Picker (after authentication) */
+    const roleScreen = () => `<div class="wrap"><div class="narrow" style="margin:0 auto">
+        <h1 class="ctr">Find what you lost. Return what you found.</h1>
+        <p class="mut ctr" style="margin-top:10px;">Choose how you want to use the system today.</p>
+        <div class="two" style="margin-top:24px; margin-bottom:40px;">
+            <button class="btn role lost" data-act="pick" data-s="lost" style="height:100px; font-size:1.1em;"><b>I lost something</b></button>
+            <button class="btn role found" data-act="pick" data-s="found" style="height:100px; font-size:1.1em;"><b>I found something</b></button>
+        </div>
+        </div>${home()}</div>`;
+
+    const form = L => `<form id="rf" class="card">
+        <h2>${L ? 'What did you lose?' : 'What did you find?'}</h2>
+        <label>Item<input name="t" required maxlength="60" placeholder="${L ? 'Black earbuds with charging case' : 'Brown leather wallet'}"></label>
+        <div class="two2">
+            <label>Category<select name="c" required><option value="">Choose</option>${opt(CATS)}</select></label>
+            <label>Main colour<select name="col" required><option value="">Choose</option>${opt(Object.keys(COL))}</select></label>
+        </div>
+        <div class="box" style="background:#f9f9f9; padding:16px; border-radius:6px; margin-bottom:16px;">
+            <b>${L ? 'Where did you lose it?' : 'Where did you find it?'}</b>
+            <div class="acts" style="margin:0;align-items:center; margin-top:10px;">
+                <button type="button" class="btn ghost sm" data-act="locate">Use my current location</button>
+                <span id="ls" class="sm mut" role="status">${D.location ? 'Location captured.' : 'Or choose a campus place below.'}</span>
+            </div>
+            <label style="margin-top:10px">Campus location<select name="pl"><option value="">Choose a place (optional if GPS works)</option>${opt(Object.keys(PL))}</select></label>
+        </div>
+        <label>Description<textarea name="d" required minlength="8" rows="3" placeholder="Marks, stickers, scratches, identifying details"></textarea></label>
+        <label>Photo (optional, max 5 MB)<input type="file" id="ph" accept="image/jpeg,image/png,image/webp"></label>
+        <div id="pv" style="margin-bottom:16px; border-radius:6px; overflow:hidden;"></div>
+
+        ${L ? '' : `
+        <!-- Finder Security Question for Owner -->
+        <div class="box" style="background:#f0f7ff; border:1px solid #bfdbfe; padding:16px; border-radius:8px; margin-bottom:16px;">
+            <b style="color:#1d4ed8; font-size:1em; display:flex; align-items:center; gap:6px;">
+                🔐 Secret Verification Question for Owner
+            </b>
+            <p class="sm mut" style="margin:4px 0 12px 0;">
+                Ask a specific question only the true owner would know about this object (e.g. engraving, scratches, case color, unique marks).
+            </p>
+            <label style="margin-bottom:12px;">
+                Question to ask the owner
+                <input name="vq" placeholder="e.g. What is engraved on the back? What color is the zipper pull?">
+            </label>
+            <label style="margin-bottom:0;">
+                Correct secret answer (kept hidden from claimants)
+                <input name="va" placeholder="e.g. Fossil 2024 / blue dinosaur sticker">
+            </label>
+        </div>
+        `}
+
+        <button class="btn ${L ? 'lost' : 'found'}" type="submit">${L ? 'Save lost report' : 'Save found report'}</button>
+    </form>`;
+
+    function lostItems() {
+        const allLost = backendItems.filter(i => i.type === 'lost');
+        const myLost = allLost.filter(isMyItem);
+        const hasMy = myLost.length > 0;
+
+        if (!allLost.length) {
+            return empty('No lost items yet', 'Report what you lost to save it to the backend.', '<button class="btn lost" data-act="tab" data-t="report">Report a lost item</button>');
+        }
+
+        const filterBar = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; gap:8px;">
+                    <button class="btn ${lostScope === 'mine' ? 'lost' : 'ghost'} sm" data-act="set-lost-scope" data-scope="mine">
+                        My lost items (${myLost.length})
+                    </button>
+                    <button class="btn ${lostScope === 'all' ? 'lost' : 'ghost'} sm" data-act="set-lost-scope" data-scope="all">
+                        All campus reports (${allLost.length})
+                    </button>
+                </div>
+                ${lostScope === 'mine' && !hasMy ? '<span class="sm mut">You haven\'t reported any lost items yet.</span>' : ''}
+            </div>
+        `;
+
+        if (lostScope === 'mine' && !hasMy) {
+            return filterBar + empty(
+                'You haven\'t reported any lost items yet',
+                'Report your lost item to find matches, or browse all campus lost reports.',
+                `<div class="acts" style="justify-content:center; gap:8px;">
+                    <button class="btn lost" data-act="tab" data-t="report">Report a lost item</button>
+                    <button class="btn ghost" data-act="set-lost-scope" data-scope="all">Browse all campus reports</button>
+                </div>`
+            );
+        }
+
+        const displayList = (lostScope === 'mine' && hasMy) ? myLost : allLost;
+
+        const cards = displayList.slice().reverse().map(l => {
+            const isMine = isMyItem(l);
+            const isChecking = !!matchLoading[String(l.id)];
+
+            return `<div class="card">
+                <div class="head" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:16px; margin-bottom:16px;">
+                    <div>
+                        <h2 style="margin:0">${esc(l.title)} ${isMine ? '<span class="pill lost" style="font-size:0.7em; vertical-align:middle;">Mine</span>' : ''}</h2>
+                        <div class="sm mut">Lost at ${loc(l)} · ${ago(l.t)}</div>
+                    </div>
+                    <button class="btn ghost sm" data-act="refresh-matches" data-id="${esc(l.id)}" ${isChecking ? 'disabled' : ''}>
+                        ${isChecking ? 'Checking...' : 'Refresh matches'}
+                    </button>
+                </div>
+                <div id="matches-body-${esc(l.id)}">
+                    ${renderMatchesRows(l)}
+                </div>
+            </div>`;
+        }).join('');
+
+        return filterBar + cards;
+    }
+
+    function foundItems() {
+        const mine = backendItems.filter(i => i.type === 'found');
+        if (!mine.length) return empty('No found items yet', 'Post a found item so its owner can claim it.', '<button class="btn found" data-act="tab" data-t="report">Post a found item</button>');
+        return `<div class="card">${mine.slice().reverse().map(i => {
+            const isMine = isMyItem(i);
+            return `<div class="row">
+                ${th(i)}
+                <div style="flex:1">
+                    <b>${esc(i.title)} ${isMine ? '<span class="pill found" style="font-size:0.7em; vertical-align:middle;">Posted by you</span>' : ''}</b>
+                    <div class="sm mut">${loc(i)} · ${ago(i.t)}</div>
+                    ${i.verification_question ? `<div class="sm" style="margin-top:4px; color:#1e40af;"><b>🔐 Question for owner:</b> ${esc(i.verification_question)}</div>` : ''}
+                </div>
+                <div class="act">
+                    <span class="chip ${i.status === 'resolved' ? 'ok' : 'mid'}">${esc(i.status)}</span>
+                </div>
+            </div>`;
+        }).join('')}</div>`;
+    }
+
+    function claimsView() {
+        if (claimsBusy) return empty('Loading claims…', 'Getting claims from the Flask backend.');
+        if (!backendClaims.length) return empty('No claims yet', 'Claims submitted for found items you reported will appear here.', '<button class="btn ghost" data-act="refresh-claims">Refresh claims</button>');
+
+        return `<div class="acts" style="margin-bottom:20px;"><button class="btn ghost sm" data-act="refresh-claims">Refresh claims</button></div>` +
+            backendClaims.slice().sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).map(c => {
+                const status = String(c.status || 'pending');
+                const chip = status === 'approved' ? 'ok' : status === 'pending' ? 'wait' : '';
+                const actions = status === 'pending' ? `<div class="acts"><button class="btn found" data-act="review" data-c="${c.id}" data-status="approved">Approve claim</button><button class="btn ghost" data-act="review" data-c="${c.id}" data-status="rejected">Reject claim</button></div>` : '';
+
+                return `<div class="card">
+                    <div class="head" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:16px; margin-bottom:16px;">
+                        <div><h2 style="margin:0">${esc(c.item_title || ('Item #' + c.item_id))}</h2><div class="sm mut">Claim #${c.id} · ${esc(c.item_location || 'Location unavailable')} · ${esc(c.created_at || '')}</div></div>
+                        <span class="chip ${chip}">${esc(status)}</span>
+                    </div>
+
+                    ${c.verification_question ? `
+                    <div style="margin:12px 0 16px 0; padding:12px; background:${c.answer_matched ? '#f0fdf4' : '#fffbeb'}; border:1px solid ${c.answer_matched ? '#bbf7d0' : '#fde68a'}; border-radius:6px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <b style="color:${c.answer_matched ? '#166534' : '#92400e'}; font-size:0.9em;">🔐 Owner Verification Challenge</b>
+                            <span class="chip ${c.answer_matched ? 'ok' : 'wait'}">
+                                ${c.answer_matched ? '✅ Answer Matches!' : '⚠️ Answer Did Not Match'}
+                            </span>
+                        </div>
+                        <div class="sm" style="margin-bottom:4px;"><b>Question asked:</b> ${esc(c.verification_question)}</div>
+                        <div class="sm" style="margin-bottom:4px;"><b>Claimant answer:</b> <span style="font-weight:bold; color:${c.answer_matched ? '#166534' : '#dc2626'}">${esc(c.claimant_answer || '(No answer provided)')}</span></div>
+                        <div class="sm mut"><b>Your expected answer:</b> ${esc(c.verification_answer || 'N/A')}</div>
+                    </div>
+                    ` : ''}
+
+                    <p style="margin:0 0 8px 0"><b>Claimant:</b> ${esc(c.claimant_name)} (${esc(c.claimant_email)})</p>
+                    <p style="margin:0 0 8px 0; background:#f9f9f9; padding:10px; border-radius:6px;"><b>Claim details:</b><br>${esc(c.claim_details)}</p>
+                    ${c.review_note ? `<p class="sm mut" style="margin-top:8px"><b>Review note:</b> ${esc(c.review_note)}</p>` : ''}
+                    ${actions}
+                </div>`;
+            }).join('');
+    }
+
+    function render() {
+        const u = S.user;
+        document.body.dataset.side = u ? u.side : '';
+
+        const mode = $('#mode');
+        if (mode) mode.textContent = 'Flask backend: ' + API;
+
+        const who = $('#who');
+        if (who) {
+            if (S.loggedIn) {
+                who.innerHTML = (u && u.side ? `<span class="pill ${u.side}">${u.side === 'lost' ? 'Lost side' : 'Found side'}</span>` : '') +
+                    `<span class="sm" style="font-weight:bold; margin-right:16px;">${esc(S.userName)}</span>` +
+                    (u && u.side ? `<button class="btn ghost sm" data-act="out" style="margin-right:8px">Switch role</button>` : '') +
+                    `<button class="btn ghost sm" data-act="logout">Logout</button>`;
+            } else {
+                who.innerHTML = '';
+            }
+        }
+
+        const app = $('#app');
+        if (!app) return;
+
+        // Routing Logic
+        if (!S.loggedIn) {
+            app.innerHTML = authScreen();
+            return;
+        }
+
+        if (!u || !u.side) {
+            app.innerHTML = roleScreen();
+            return;
+        }
+
+        const L = u.side === 'lost';
+
+        const tabs = L
+            ? [['report', 'Report lost item'], ['items', 'My items and matches']]
+            : [
+                ['report', 'Report found item'],
+                ['items', 'Found items'],
+                ['claims', 'Claims to review' + (backendClaims.filter(c => c.status === 'pending').length ? ' (' + backendClaims.filter(c => c.status === 'pending').length + ')' : '')]
+            ];
+
+        if (!tabs.some(t => t[0] === S.tab)) {
+            S.tab = 'report';
+        }
+
+        const body = S.tab === 'report' ? form(L) : S.tab === 'items' ? (L ? lostItems() : foundItems()) : claimsView();
+
+        app.innerHTML = `<div class="wrap"><div class="tabs" role="tablist">${tabs.map(t => `<button role="tab" aria-selected="${S.tab === t[0]}" data-act="tab" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>${body}</div>`;
+    }
+
+    document.addEventListener('change', async e => {
+        if (e.target.id !== 'ph' || !e.target.files[0]) return;
+
+        const file = e.target.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+            toast('Image must be 5 MB or smaller.');
+            e.target.value = '';
+            return;
+        }
+
+        const p = await readPhoto(file);
+        if (!p) {
+            toast('Could not read that image.');
+            return;
+        }
+
+        D = { ...D, ...p, file };
+        const pv = $('#pv');
+        if (pv) pv.innerHTML = `<img src="${p.url}" alt="Photo preview" style="max-width:100%; height:auto;">`;
+
+        const rf = $('#rf');
+        if (rf && rf.elements.col) {
+            const sel = rf.elements.col;
+            let best = '', bd = Infinity;
+            for (const k in COL) {
+                const d = Math.hypot(...rgb(COL[k]).map((v, i) => v - p.avg[i]));
+                if (d < bd) { bd = d; best = k; }
+            }
+            if (!sel.value) sel.value = best;
+        }
+    });
+
+    document.addEventListener('submit', async e => {
+        e.preventDefault();
+        const fm = e.target;
+
+        if (fm.id === 'auth-form') {
+            const v = Object.fromEntries(new FormData(fm));
+            const btn = fm.querySelector('button[type=submit]');
+            btn.disabled = true;
+
+            try {
+                if (authMode === 'register') {
+                    await api('/api/auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: v.name, email: v.email, password: v.password })
+                    });
+                    toast('Registered successfully! Logging in...');
+                }
+
+                const loginRes = await api('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: v.email, password: v.password })
+                });
+
+                S.loggedIn = true;
+                S.userName = loginRes.user?.name || loginRes.name || v.name || v.email.split('@')[0];
+                S.userId = loginRes.user?.id || null;
+                S.user = null; // Clear role so they pick Lost vs Found
+                save();
+
+                toast('Logged in successfully!');
+                await refreshItems();
+                render();
+            } catch (err) {
+                toast('Authentication failed: ' + err.message);
+            } finally {
+                if (btn.isConnected) btn.disabled = false;
+            }
+        } else if (fm.id === 'rf') {
+            const v = Object.fromEntries(new FormData(fm));
+            const isLost = S.user.side === 'lost';
+            const btn = fm.querySelector('button[type=submit]');
+            btn.disabled = true;
+
+            try {
+                let imagePath = null;
+
+                if (D.file) {
+                    const fd = new FormData();
+                    fd.append('image', D.file);
+                    const up = await api('/api/uploads/', { method: 'POST', body: fd });
+                    imagePath = up.image_path || null;
+                }
+
+                const chosenLocation = (v.pl || D.location || '').trim();
+                if (!chosenLocation) {
+                    toast('Choose a campus location or use your current location.');
+                    return;
+                }
+
+                const payload = {
+                    type: isLost ? 'lost' : 'found',
+                    title: v.t.trim(),
+                    description: v.d.trim(),
+                    category: normCategory(v.c),
+                    location: chosenLocation,
+                    date_lost_found: new Date().toISOString().slice(0, 10),
+                    image_path: imagePath,
+                    verification_question: (!isLost && v.vq) ? v.vq.trim() : null,
+                    verification_answer: (!isLost && v.va) ? v.va.trim() : null
+                };
+
+                const result = await api('/api/items/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const createdId = result.item_id ?? result.id;
+                if (createdId) {
+                    if (!Array.isArray(S.myReportedIds)) S.myReportedIds = [];
+                    S.myReportedIds.push(Number(createdId));
+                }
+
+                await refreshItems();
+                D = {};
+                lostScope = 'mine';
+                S.tab = 'items';
+                save();
+                render();
+
+                toast((isLost ? 'Lost' : 'Found') + ' report saved in the Flask database. Item ID: ' + (createdId ?? 'saved'));
+                if (isLost && createdId) {
+                    loadMatchesForItem(createdId, true);
+                }
+            } catch (err) {
+                toast('Could not save report: ' + err.message);
+            } finally {
+                if (btn.isConnected) btn.disabled = false;
+            }
+        } else if (fm.id === 'claim-form') {
+            const btn = fm.querySelector('button[type=submit]');
+            btn.disabled = true;
+
+            try {
+                const res = await api('/api/claims/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        item_id: Number(fm.elements.item_id.value),
+                        claimant_name: S.userName,
+                        claimant_email: fm.elements.email.value.trim(),
+                        claim_details: fm.elements.details.value.trim(),
+                        claimant_answer: fm.elements.claimant_answer ? fm.elements.claimant_answer.value.trim() : ''
+                    })
+                });
+
+                $('#dlg').close();
+                claimsLoaded = false;
+                if (res.answer_matched) {
+                    toast('✅ Verification answer MATCHED! Claim submitted for review.');
+                } else {
+                    toast('Claim submitted to the finder for review.');
+                }
+            } catch (err) {
+                toast('Could not submit claim: ' + err.message);
+            } finally {
+                if (btn.isConnected) btn.disabled = false;
+            }
+        }
+    });
+
+    document.addEventListener('click', async e => {
+        const t = e.target.closest('[data-act]');
+        if (!t) return;
+
+        const a = t.dataset.act;
+
+        if (a === 'auth-tab') {
+            authMode = t.dataset.m;
+            render();
+        } else if (a === 'pick') {
+            S.user = { name: S.userName, side: t.dataset.s };
+            S.tab = 'report';
+            save();
+            render();
+        } else if (a === 'tab') {
+            S.tab = t.dataset.t;
+            save();
+            render();
+
+            if (S.user?.side === 'lost' && S.tab === 'items') loadMatches();
+            if (S.user?.side === 'found' && S.tab === 'claims') loadClaims(true);
+        } else if (a === 'set-lost-scope') {
+            lostScope = t.dataset.scope || 'mine';
+            render();
+            loadMatches();
+        } else if (a === 'out') {
+            S.user = null;
+            save();
+            render();
+        } else if (a === 'logout') {
+            await api('/api/auth/logout', { method: 'POST' }).catch(() => {});
+            S.loggedIn = false;
+            S.user = null;
+            S.userName = '';
+            S.userId = null;
+            save();
+            render();
+            toast('Logged out successfully.');
+        } else if (a === 'refresh-matches') {
+            const id = t.dataset.id;
+            if (!id || matchLoading[String(id)]) return;
+            loadMatchesForItem(id, true);
+        } else if (a === 'refresh-claims') {
+            claimsLoaded = false;
+            loadClaims(true);
+        } else if (a === 'claim') {
+            const itemId = t.dataset.f;
+            const itemTitle = t.dataset.title || 'this item';
+            const itemVq = t.dataset.vq || '';
+            const d = $('#dlg');
+
+            d.innerHTML = `<form id="claim-form">
+                <h2>Claim ${esc(itemTitle)}</h2>
+                <p class="sm mut" style="margin-bottom:14px">Your claim will be sent to the finder for review.</p>
+                <input type="hidden" name="item_id" value="${esc(itemId)}">
+                
+                ${itemVq ? `
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #2563eb; padding:12px; border-radius:6px; margin-bottom:14px;">
+                    <b style="color:#1e40af; display:block; font-size:0.9em; margin-bottom:4px;">🔐 Security Question from Finder:</b>
+                    <p style="margin:0; font-size:1em; color:#1e293b; font-weight:600;">"${esc(itemVq)}"</p>
+                </div>
+                <label>Your answer to the finder's question
+                    <input name="claimant_answer" required placeholder="Type the answer only you would know...">
+                </label>
+                ` : ''}
+
+                <label>Your email<input name="email" type="email" required maxlength="254" placeholder="you@example.com"></label>
+                <label>Why is this item yours?<textarea name="details" required minlength="8" maxlength="1000" rows="3" placeholder="Describe identifying details that help verify ownership"></textarea></label>
+                <div class="acts"><button class="btn lost" type="submit">Submit claim</button><button class="btn ghost" type="button" data-act="close-dialog">Cancel</button></div>
+            </form>`;
+
+            d.showModal();
+        } else if (a === 'locate') {
+            const s = $('#ls');
+            if (!s) return;
+            if (!navigator.geolocation) {
+                s.textContent = 'Location unavailable in this browser; choose a campus place.';
+                return;
+            }
+            s.textContent = 'Getting your location…';
+            navigator.geolocation.getCurrentPosition(pos => {
+                D.location = 'GPS: ' + pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5);
+                s.textContent = 'Location captured (about ' + Math.round(pos.coords.accuracy) + ' m accuracy).';
+            }, () => {
+                s.textContent = 'Could not get location; choose a campus place.';
+            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+        } else if (a === 'close-dialog') {
+            $('#dlg').close();
+        } else if (a === 'review') {
+            const claimId = t.dataset.c;
+            const status = t.dataset.status;
+
+            if (!confirm(`Are you sure you want to ${status === 'approved' ? 'approve' : 'reject'} claim #${claimId}?`)) return;
+
+            const note = prompt('Optional review note:', '') || '';
+
+            try {
+                await api('/api/claims/' + encodeURIComponent(claimId) + '/review', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, review_note: note })
+                });
+
+                toast('Claim ' + status + '.');
+                claimsLoaded = false;
+                await refreshItems();
+                await loadClaims(true);
+                render();
+            } catch (err) {
+                toast('Could not review claim: ' + err.message);
+            }
+        }
+    });
+
+    (async () => {
+        render();
+
+        try {
+            // Verify active session with backend /api/auth/me
+            const me = await api('/api/auth/me').catch(() => null);
+            if (me && me.logged_in && me.user) {
+                S.loggedIn = true;
+                S.userId = me.user.id;
+                S.userName = me.user.name;
+                save();
+            }
+
+            if (S.loggedIn) {
+                await refreshItems();
+                render();
+                if (S.user) {
+                    if (S.user.side === 'lost' && S.tab === 'items') loadMatches();
+                    if (S.user.side === 'found' && S.tab === 'claims') loadClaims(true);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    })();
+    });
+    </script>
+</body>
+</html>
